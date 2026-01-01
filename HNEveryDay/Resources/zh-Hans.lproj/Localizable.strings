@@ -10,6 +10,7 @@
 "No Stories Found" = "暂无内容";
 "Check your connection or try again." = "请检查网络连接";
 "Hacker News" = "Hacker News";
+"Saved" = "收藏";
 
 /* Feed Filter */
 "Top" = "热门";
@@ -20,6 +21,14 @@
 "Jobs" = "招聘";
 "Category" = "分类";
 "Filter" = "筛选";
+"Show Feed" = "显示动态";
+
+/* Bookmarks */
+"Save" = "收藏";
+"Unsave" = "取消收藏";
+"Remove" = "移除";
+"No Saved Stories" = "暂无收藏";
+"Swipe left on a story to save it." = "左滑可收藏文章";
 
 /* Item Detail */
 "Article" = "文章";
@@ -42,7 +51,7 @@
 "Quick Setup" = "快速设置";
 "Provider Preset" = "服务商预设";
 "API Key" = "API 密钥";
-"Your key is stored securely on device." = "您的密钥已安全存储在设备上。";
+"Your key is stored securely in Keychain." = "您的密钥已安全存储在钥匙串中。";
 "Configuration" = "高级配置";
 "Base URL" = "服务器地址";
 "Model Name" = "模型名称";

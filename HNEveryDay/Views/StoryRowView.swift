@@ -10,10 +10,8 @@ import SwiftUI
 
 struct StoryRowView: View {
   let item: HNItem
-
   let isRead: Bool
-
-  // No more @Query here. Performance +++.
+  let isSaved: Bool
 
   var body: some View {
     HStack(alignment: .top, spacing: 12) {
@@ -58,19 +56,26 @@ struct StoryRowView: View {
 
       Spacer(minLength: 0)
 
-      // MARK: - Trailing: Comments area
-      // Designed as a touch target that is distinct
-      VStack(alignment: .center) {
-        Image(systemName: "bubble.left.and.bubble.right")
-          .font(.system(size: 12))
-        Text("\(item.descendants ?? 0)")
-          .font(.caption2)
-          .fontWeight(.bold)
+      // MARK: - Trailing: Comments + Bookmark
+      HStack(spacing: 8) {
+        if isSaved {
+          Image(systemName: "bookmark.fill")
+            .font(.caption)
+            .foregroundStyle(.orange)
+        }
+
+        VStack(alignment: .center) {
+          Image(systemName: "bubble.left.and.bubble.right")
+            .font(.system(size: 12))
+          Text("\(item.descendants ?? 0)")
+            .font(.caption2)
+            .fontWeight(.bold)
+        }
+        .foregroundStyle(.secondary)
+        .padding(8)
+        .background(Color.secondary.opacity(0.05))
+        .clipShape(RoundedRectangle(cornerRadius: 8))
       }
-      .foregroundStyle(.secondary)
-      .padding(8)
-      .background(Color.secondary.opacity(0.05))
-      .clipShape(RoundedRectangle(cornerRadius: 8))
     }
     .padding(.vertical, 8)
     .contentShape(Rectangle())  // Make entire row tappable
@@ -94,7 +99,8 @@ struct StoryRowView: View {
       deleted: nil,
       dead: nil
     ),
-    isRead: false
+    isRead: false,
+    isSaved: true
   )
   .padding()
 }

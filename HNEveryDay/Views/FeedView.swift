@@ -11,39 +11,94 @@ struct FeedView: View {
   @State private var viewModel = FeedViewModel()
   @ObservedObject private var dataService = DataService.shared
   @State private var showSettings = false
+  @State private var showingSavedOnly = false
 
   var body: some View {
     NavigationStack {
       List {
-        ForEach(viewModel.stories) { story in
-          NavigationLink(destination: ItemDetailView(item: story)) {
-            StoryRowView(item: story, isRead: dataService.readStoryIds.contains(story.id))
-          }
-          .onAppear {
-            if story.id == viewModel.stories.last?.id {
-              Task { await viewModel.loadNextPage() }
+        // Show saved stories from cache or live feed
+        if showingSavedOnly {
+          let savedStories = dataService.fetchSavedStories()
+          if savedStories.isEmpty {
+            ContentUnavailableView(
+              "No Saved Stories", systemImage: "bookmark.slash",
+              description: Text("Swipe left on a story to save it."))
+          } else {
+            ForEach(savedStories, id: \.id) { cached in
+              // Convert CachedStory to minimal display
+              HStack(alignment: .top, spacing: 12) {
+                Image(systemName: "bookmark.fill")
+                  .foregroundStyle(.orange)
+                VStack(alignment: .leading, spacing: 4) {
+                  Text(cached.title)
+                    .font(.headline)
+                  if let url = cached.url {
+                    Text(url)
+                      .font(.caption)
+                      .foregroundStyle(.secondary)
+                      .lineLimit(1)
+                  }
+                }
+              }
+              .padding(.vertical, 4)
+              .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                Button(role: .destructive) {
+                  // Remove from saved by finding HNItem or using ID
+                  // For simplicity, we'll create a minimal HNItem
+                  let tempItem = HNItem(
+                    id: cached.id, type: .story, by: nil, time: Date(), text: nil, url: cached.url,
+                    score: nil, title: cached.title, descendants: nil, kids: nil, parent: nil,
+                    deleted: nil, dead: nil)
+                  dataService.toggleSave(item: tempItem)
+                } label: {
+                  Label("Remove", systemImage: "trash")
+                }
+              }
             }
           }
-        }
-
-        if viewModel.isLoading && viewModel.stories.isEmpty {
-          ContentUnavailableView {
-            ProgressView()
-          } description: {
-            Text("Loading Stories...", comment: "Loading state message")
+        } else {
+          ForEach(viewModel.stories) { story in
+            NavigationLink(destination: ItemDetailView(item: story)) {
+              StoryRowView(
+                item: story,
+                isRead: dataService.readStoryIds.contains(story.id),
+                isSaved: dataService.savedStoryIds.contains(story.id)
+              )
+            }
+            .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+              Button {
+                dataService.toggleSave(item: story)
+              } label: {
+                let isSaved = dataService.savedStoryIds.contains(story.id)
+                Label(
+                  isSaved ? "Unsave" : "Save", systemImage: isSaved ? "bookmark.slash" : "bookmark")
+              }
+              .tint(.orange)
+            }
+            .onAppear {
+              if story.id == viewModel.stories.last?.id {
+                Task { await viewModel.loadNextPage() }
+              }
+            }
           }
-        }
 
-        if viewModel.stories.isEmpty && !viewModel.isLoading {
-          ContentUnavailableView(
-            "No Stories Found", systemImage: "wifi.slash",
-            description: Text("Check your connection or try again."))
+          if viewModel.isLoading && viewModel.stories.isEmpty {
+            SkeletonView()
+          }
+
+          if viewModel.stories.isEmpty && !viewModel.isLoading {
+            ContentUnavailableView(
+              "No Stories Found", systemImage: "wifi.slash",
+              description: Text("Check your connection or try again."))
+          }
         }
       }
       .listStyle(.plain)
-      .navigationTitle("Hacker News")
+      .navigationTitle(showingSavedOnly ? "Saved" : "Hacker News")
       .refreshable {
-        await viewModel.refresh()
+        if !showingSavedOnly {
+          await viewModel.refresh()
+        }
       }
       .toolbar {
         ToolbarItem(placement: .topBarLeading) {
@@ -56,11 +111,23 @@ struct FeedView: View {
 
         ToolbarItem(placement: .topBarTrailing) {
           Menu {
+            // Saved Filter Toggle
+            Button {
+              showingSavedOnly.toggle()
+            } label: {
+              Label(
+                showingSavedOnly ? "Show Feed" : "Saved",
+                systemImage: showingSavedOnly ? "list.bullet" : "bookmark.fill")
+            }
+
+            Divider()
+
             Picker(
               "Category",
               selection: Binding(
                 get: { viewModel.selectedFeedType },
                 set: { type in
+                  showingSavedOnly = false
                   Task { await viewModel.updateFeedType(type) }
                 }
               )
@@ -73,7 +140,9 @@ struct FeedView: View {
               Label("Jobs", systemImage: "briefcase").tag(HNClient.StoryType.job)
             }
           } label: {
-            Label("Filter", systemImage: "line.3.horizontal.decrease.circle")
+            Label(
+              "Filter",
+              systemImage: showingSavedOnly ? "bookmark.fill" : "line.3.horizontal.decrease.circle")
           }
         }
       }
@@ -86,6 +155,8 @@ struct FeedView: View {
       if viewModel.stories.isEmpty {
         await viewModel.refresh()
       }
+      // Refresh saved IDs
+      dataService.refreshSavedIds()
       // Housekeeping
       dataService.cleanupOldEntries()
     }

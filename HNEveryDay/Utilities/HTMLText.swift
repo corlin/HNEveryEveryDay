@@ -8,23 +8,42 @@
 import SwiftUI
 
 enum HTMLHelper {
-  nonisolated static func parse(_ html: String) -> AttributedString {
-    guard let data = html.data(using: .utf8) else {
-      return AttributedString(html)
+  /// Strips HTML tags and converts to plain text
+  static func stripTags(_ html: String) -> String {
+    guard !html.isEmpty else { return "" }
+
+    var result =
+      html
+      // Convert paragraph and line breaks
+      .replacingOccurrences(of: "<p>", with: "")
+      .replacingOccurrences(of: "</p>", with: "\n\n")
+      .replacingOccurrences(of: "<br>", with: "\n")
+      .replacingOccurrences(of: "<br/>", with: "\n")
+      .replacingOccurrences(of: "<br />", with: "\n")
+      // Decode HTML entities
+      .replacingOccurrences(of: "&amp;", with: "&")
+      .replacingOccurrences(of: "&lt;", with: "<")
+      .replacingOccurrences(of: "&gt;", with: ">")
+      .replacingOccurrences(of: "&quot;", with: "\"")
+      .replacingOccurrences(of: "&#x27;", with: "'")
+      .replacingOccurrences(of: "&#39;", with: "'")
+      .replacingOccurrences(of: "&nbsp;", with: " ")
+      .replacingOccurrences(of: "&#x2F;", with: "/")
+
+    // Remove remaining HTML tags
+    result = result.replacingOccurrences(of: "<[^>]+>", with: "", options: .regularExpression)
+
+    // Clean up multiple newlines
+    while result.contains("\n\n\n") {
+      result = result.replacingOccurrences(of: "\n\n\n", with: "\n\n")
     }
 
-    do {
-      let nsAttrString = try NSAttributedString(
-        data: data,
-        options: [
-          .documentType: NSAttributedString.DocumentType.html,
-          .characterEncoding: String.Encoding.utf8.rawValue,
-        ],
-        documentAttributes: nil
-      )
-      return AttributedString(nsAttrString)
-    } catch {
-      return AttributedString(html)
-    }
+    return result.trimmingCharacters(in: .whitespacesAndNewlines)
+  }
+
+  /// For backward compatibility - parses HTML to AttributedString
+  @MainActor
+  static func parse(_ html: String) -> AttributedString {
+    return AttributedString(stripTags(html))
   }
 }

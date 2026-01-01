@@ -40,7 +40,8 @@ final class AIService: Sendable {
   func summarize(title: String, url: String?, articleContent: String?, comments: [String])
     async throws -> String
   {
-    let apiKey = UserDefaults.standard.string(forKey: "ai_api_key") ?? ""
+    // Read API key from Keychain (secure storage)
+    let apiKey = KeychainHelper.read(key: "ai_api_key") ?? ""
     let baseUrl = UserDefaults.standard.string(forKey: "ai_base_url") ?? "https://api.openai.com/v1"
     let model = UserDefaults.standard.string(forKey: "ai_model") ?? "gpt-3.5-turbo"
 

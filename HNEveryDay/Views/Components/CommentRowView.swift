@@ -10,14 +10,12 @@ import SwiftUI
 struct CommentRowView: View {
   let node: CommentNode
   var isCollapsed: Bool = false
-  @State private var attributedText: AttributedString?
+  @State private var displayText: String = ""
 
   // Indentation scaling
   private var indentation: CGFloat {
     return CGFloat(node.depth) * 16.0
   }
-
-  // Color coding for depth lines (optional, kept simple for now)
 
   var body: some View {
     VStack(alignment: .leading, spacing: 4) {
@@ -45,23 +43,23 @@ struct CommentRowView: View {
       }
       .padding(.bottom, 2)
 
-      // Body: Parsed HTML (Hidden if collapsed)
+      // Body: Comment text (Hidden if collapsed)
       if !isCollapsed {
-        if let text = attributedText {
-          Text(text)
+        if !displayText.isEmpty {
+          Text(displayText)
             .font(.system(size: 15))
             .foregroundStyle(.primary)
+            .textSelection(.enabled)
         } else {
-          Text("Loading...")
+          Text("[no content]")
             .font(.caption)
             .foregroundStyle(.secondary)
         }
       }
     }
-    .padding(.leading, indentation)  // Visual indentation
+    .padding(.leading, indentation)
     .padding(.vertical, 8)
     .overlay(alignment: .leading) {
-      // Optional: Draw a vertical line for depth
       if node.depth > 0 {
         Rectangle()
           .fill(Color.gray.opacity(0.2))
@@ -70,18 +68,13 @@ struct CommentRowView: View {
           .padding(.vertical, 2)
       }
     }
-    .contentShape(Rectangle())  // Make tappable area include spacing
-    .task {
-      if let html = node.item.text {
-        // Parse in background to avoid stutter
-        let parsed = await Task.detached {
-          return HTMLHelper.parse(html)
-        }.value
-        await MainActor.run {
-          self.attributedText = parsed
-        }
+    .contentShape(Rectangle())
+    .onAppear {
+      // Parse HTML on appear (synchronously on main thread)
+      if let html = node.item.text, !html.isEmpty {
+        displayText = HTMLHelper.stripTags(html)
       } else {
-        self.attributedText = AttributedString("[deleted]")
+        displayText = "[deleted]"
       }
     }
   }

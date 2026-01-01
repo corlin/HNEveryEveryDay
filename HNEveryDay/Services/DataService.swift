@@ -8,6 +8,7 @@
 import Combine
 import Foundation
 import SwiftData
+import UIKit
 
 @MainActor
 class DataService: ObservableObject {
@@ -128,6 +129,64 @@ class DataService: ObservableObject {
       }
     } catch {
       print("Failed to save summary: \(error)")
+    }
+  }
+
+  // MARK: - Bookmarks
+  @Published var savedStoryIds: Set<Int> = []
+
+  func refreshSavedIds() {
+    let context = container.mainContext
+    let descriptor = FetchDescriptor<CachedStory>(predicate: #Predicate { $0.isSaved })
+    do {
+      let stories = try context.fetch(descriptor)
+      self.savedStoryIds = Set(stories.map { $0.id })
+    } catch {
+      print("Failed to fetch saved IDs: \(error)")
+    }
+  }
+
+  func toggleSave(item: HNItem) {
+    let context = container.mainContext
+    let id = item.id
+    let descriptor = FetchDescriptor<CachedStory>(predicate: #Predicate { $0.id == id })
+
+    do {
+      if let existing = try context.fetch(descriptor).first {
+        existing.isSaved.toggle()
+        try context.save()
+        // Update local set
+        if existing.isSaved {
+          savedStoryIds.insert(id)
+        } else {
+          savedStoryIds.remove(id)
+        }
+      } else {
+        // Create new entry if not exists
+        let newStory = CachedStory(
+          id: item.id,
+          title: item.title ?? "Untitled",
+          url: item.url,
+          isSaved: true
+        )
+        context.insert(newStory)
+        try context.save()
+        savedStoryIds.insert(id)
+      }
+      UINotificationFeedbackGenerator().notificationOccurred(.success)
+    } catch {
+      print("Failed to toggle save: \(error)")
+    }
+  }
+
+  func fetchSavedStories() -> [CachedStory] {
+    let context = container.mainContext
+    let descriptor = FetchDescriptor<CachedStory>(predicate: #Predicate { $0.isSaved })
+    do {
+      return try context.fetch(descriptor)
+    } catch {
+      print("Failed to fetch saved stories: \(error)")
+      return []
     }
   }
 }

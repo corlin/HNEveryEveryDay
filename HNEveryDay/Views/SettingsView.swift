@@ -8,8 +8,8 @@
 import SwiftUI
 
 struct SettingsView: View {
-  // AI Configuration
-  @AppStorage("ai_api_key") private var apiKey: String = ""
+  // AI Configuration - API Key stored in Keychain
+  @State private var apiKey: String = ""
   @AppStorage("ai_base_url") private var baseURL: String = "https://api.openai.com/v1"
   @AppStorage("ai_model") private var model: String = "gpt-3.5-turbo"
 
@@ -85,10 +85,13 @@ struct SettingsView: View {
         // MARK: - Credentials
         Section {
           SecureField("sk-...", text: $apiKey)
+            .onChange(of: apiKey) { _, newValue in
+              _ = KeychainHelper.save(key: "ai_api_key", value: newValue)
+            }
         } header: {
           Text("API Key", comment: "Section header")
         } footer: {
-          Text("Your key is stored securely on device.", comment: "Security note")
+          Text("Your key is stored securely in Keychain.", comment: "Security note")
         }
 
         // MARK: - Advanced Config
@@ -180,6 +183,9 @@ struct SettingsView: View {
       }
     }
     .onAppear {
+      // Load API key from Keychain
+      apiKey = KeychainHelper.read(key: "ai_api_key") ?? ""
+
       // Detect provider from URL
       if let match = AIProvider.allCases.first(where: {
         baseURL.contains($0.defaultBaseURL) && $0 != .custom
