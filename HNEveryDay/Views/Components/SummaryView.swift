@@ -25,20 +25,29 @@ struct SummaryView: View {
             VStack(spacing: 12) {
               ProgressView()
                 .controlSize(.large)
-              Text("Analyzing discussion...")
+              Text("Analyzing discussion...", comment: "AI loading state")
                 .foregroundStyle(.secondary)
             }
             .frame(maxWidth: .infinity, minHeight: 200)
           } else if let error = errorMsg {
             VStack(spacing: 12) {
-              Image(systemName: "exclamationmark.triangle")
+              Image(systemName: "exclamationmark.triangle.fill")
                 .font(.largeTitle)
-                .foregroundStyle(.red)
+                .foregroundStyle(.orange)
+              Text("AI Service Connection Failed", comment: "Error title")
+                .font(.headline)
               Text(error)
                 .multilineTextAlignment(.center)
                 .foregroundStyle(.secondary)
+                .font(.caption)
+
+              Text("Please check your API Key and Network settings.", comment: "Error suggestion")
+                .font(.caption2)
+                .foregroundStyle(.secondary)
             }
             .padding()
+            .background(Color.red.opacity(0.1))
+            .cornerRadius(12)
           } else {
             // Success State
             Text(try! AttributedString(markdown: summaryText))  // Basic Markdown parsing
@@ -48,7 +57,7 @@ struct SummaryView: View {
         }
         .padding()
       }
-      .navigationTitle("Magic Summary")
+      .navigationTitle(Text("Magic Summary", comment: "Page title"))
       .navigationBarTitleDisplayMode(.inline)
       .toolbar {
         ToolbarItem(placement: .topBarTrailing) {

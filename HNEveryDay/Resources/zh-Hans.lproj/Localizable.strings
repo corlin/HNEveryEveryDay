@@ -1,0 +1,49 @@
+/* 
+  Localizable.strings
+  HNEveryDay
+
+  Created by AI.
+*/
+
+/* Feed */
+"Loading Stories..." = "正在加载...";
+"No Stories Found" = "暂无内容";
+"Check your connection or try again." = "请检查网络连接";
+"Hacker News" = "Hacker News";
+
+/* Feed Filter */
+"Top" = "热门";
+"New" = "最新";
+"Best" = "精华";
+"Show" = "展示";
+"Ask" = "问答";
+"Jobs" = "招聘";
+"Category" = "分类";
+"Filter" = "筛选";
+
+/* Item Detail */
+"Article" = "文章";
+"Comments" = "评论";
+"Optimizing for Reader..." = "正在优化阅读体验...";
+"Parsing content locally to remove ads and clutter." = "本地智能解析中，为您移除广告和干扰元素。";
+"Loading Thread..." = "加载评论中...";
+"No Comments" = "暂无评论";
+"No URL" = "无链接";
+
+/* Summary */
+"Magic Summary" = "AI 智能总结";
+"Analyzing discussion..." = "正在分析讨论...";
+"AI Service Connection Failed" = "AI 服务连接失败";
+"Please check your API Key and Network settings." = "请检查您的 API 密钥和网络设置。由于网络原因，连接可能不稳定，系统已尝试自动重试。";
+
+/* Settings */
+"Settings" = "设置";
+"AI Settings" = "AI 设置";
+"Quick Setup" = "快速设置";
+"Provider Preset" = "服务商预设";
+"API Key" = "API 密钥";
+"Your key is stored securely on device." = "您的密钥已安全存储在设备上。";
+"Configuration" = "高级配置";
+"Base URL" = "服务器地址";
+"Model Name" = "模型名称";
+"Done" = "完成";

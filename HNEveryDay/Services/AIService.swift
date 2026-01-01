@@ -59,6 +59,10 @@ final class AIService: Sendable {
       prompt += "URL: \(url)\n"
     }
 
+    // Localization Check
+    let isChinese = Locale.current.identifier.lowercased().starts(with: "zh")
+    let langInstruction = isChinese ? "Answer in Simplified Chinese (简体中文)." : ""
+
     if let content = articleContent, !content.isEmpty {
       prompt += "\nArticle Content (Excerpt):\n"
       // Limit article content to avoid context overflow (approx 1000 chars or reasonable limit)
@@ -74,7 +78,7 @@ final class AIService: Sendable {
     }
 
     prompt +=
-      "\nTask: Please provide a concise summary. 1. Summarize the Article's core value proposition or main argument. 2. Summarize the Key Discussion/Debate from the comments. Keep it under 300 words. Format in Markdown."
+      "\nTask: Please provide a concise summary. 1. Summarize the Article's core value proposition or main argument. 2. Summarize the Key Discussion/Debate from the comments. Keep it under 300 words. Format in Markdown. \(langInstruction)"
 
     // Build Request
     let requestBody = ChatRequest(
@@ -98,16 +102,60 @@ final class AIService: Sendable {
     request.addValue("application/json", forHTTPHeaderField: "Content-Type")
     request.httpBody = try JSONEncoder().encode(requestBody)
 
-    let (data, response) = try await URLSession.shared.data(for: request)
+    // Retry Logic: 3 attempts
+    var lastError: Error?
+    for attempt in 1...3 {
+      do {
+        let (data, response) = try await URLSession.shared.data(for: request)
 
-    guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
-      let errorMsg = String(data: data, encoding: .utf8) ?? "Unknown Error"
-      throw NSError(
-        domain: "AIService", code: (response as? HTTPURLResponse)?.statusCode ?? 500,
-        userInfo: [NSLocalizedDescriptionKey: "API Request Failed: \(errorMsg)"])
+        guard let httpResponse = response as? HTTPURLResponse else {
+          throw NSError(
+            domain: "AIService", code: 500,
+            userInfo: [NSLocalizedDescriptionKey: "Invalid Response"])
+        }
+
+        // Success
+        if httpResponse.statusCode == 200 {
+          let chatResponse = try JSONDecoder().decode(ChatResponse.self, from: data)
+          return chatResponse.choices.first?.message.content ?? "No response content."
+        }
+
+        // Server Error (Rate Limit / 5xx) -> Retry
+        // Client Error (401/400) -> Fail immediately (don't retry authentication errors)
+        if (500...599).contains(httpResponse.statusCode) || httpResponse.statusCode == 429 {
+          let errorMsg = String(data: data, encoding: .utf8) ?? "Server Error"
+          throw NSError(
+            domain: "AIService", code: httpResponse.statusCode,
+            userInfo: [NSLocalizedDescriptionKey: errorMsg])
+        } else {
+          // 4xx Errors (except 429) - Fatal
+          let errorMsg = String(data: data, encoding: .utf8) ?? "Client Error"
+          throw NSError(
+            domain: "AIService", code: httpResponse.statusCode,
+            userInfo: [NSLocalizedDescriptionKey: "API Request Failed: \(errorMsg)"])
+        }
+
+      } catch {
+        print("⚠️ Attempt \(attempt) failed: \(error.localizedDescription)")
+        lastError = error
+
+        // Check if we should retry (don't retry 401/403/400)
+        let nsError = error as NSError
+        if [400, 401, 403].contains(nsError.code) {
+          throw error
+        }
+
+        // Wait before retry (exponential backoff-ish)
+        if attempt < 3 {
+          try await Task.sleep(nanoseconds: UInt64(attempt * 1_000_000_000))
+        }
+      }
     }
 
-    let chatResponse = try JSONDecoder().decode(ChatResponse.self, from: data)
-    return chatResponse.choices.first?.message.content ?? "No response content."
+    // If we're here, all retries failed
+    throw lastError
+      ?? NSError(
+        domain: "AIService", code: 500,
+        userInfo: [NSLocalizedDescriptionKey: "Failed after 3 retries."])
   }
 }

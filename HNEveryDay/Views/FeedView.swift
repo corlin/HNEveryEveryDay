@@ -30,12 +30,14 @@ struct FeedView: View {
           ContentUnavailableView {
             ProgressView()
           } description: {
-            Text("Loading Stories...")
+            Text("Loading Stories...", comment: "Loading state message")
           }
         }
 
         if viewModel.stories.isEmpty && !viewModel.isLoading {
-          ContentUnavailableView("No Stories Found", systemImage: "wifi.slash")
+          ContentUnavailableView(
+            "No Stories Found", systemImage: "wifi.slash",
+            description: Text("Check your connection or try again."))
         }
       }
       .listStyle(.plain)

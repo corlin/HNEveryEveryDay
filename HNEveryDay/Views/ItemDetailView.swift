@@ -34,8 +34,8 @@ struct ItemDetailView: View {
     VStack(spacing: 0) {
       // MARK: - Picker
       Picker("Mode", selection: $selectedMode) {
-        Text("Article").tag(0)
-        Text("Comments").tag(1)
+        Text("Article", comment: "Read mode").tag(0)
+        Text("Comments", comment: "Discussion mode").tag(1)
       }
       .pickerStyle(.segmented)
       .padding()
@@ -52,11 +52,16 @@ struct ItemDetailView: View {
                 .transition(.opacity)
             } else if showReaderMode && isParsingArticle {
               VStack {
-                ProgressView("Optimizing for Reader...")
-                  .padding()
-                Text("Parsing content locally to remove ads and clutter.")
-                  .font(.caption)
-                  .foregroundStyle(.secondary)
+                ProgressView {
+                  Text("Optimizing for Reader...", comment: "Reader loading state")
+                }
+                .padding()
+                Text(
+                  "Parsing content locally to remove ads and clutter.",
+                  comment: "Reader explanation"
+                )
+                .font(.caption)
+                .foregroundStyle(.secondary)
               }
             } else {
               // Fallback to Webview
@@ -88,7 +93,7 @@ struct ItemDetailView: View {
                   .font(.headline)
                 HStack {
                   Text("\(item.score ?? 0) points")
-                  Text("by \(item.by ?? "")")
+                  Text("by \(item.by ?? "")")  // 'by' is hard to localize elegantly in concatenation, will leave as is or use a format string
                   Text(item.time.shortTimeAgo)
                 }
                 .font(.caption)

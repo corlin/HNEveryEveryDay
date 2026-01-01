@@ -74,16 +74,16 @@ struct SettingsView: View {
             }
           }
         } header: {
-          Text("Quick Setup")
+          Text("Quick Setup", comment: "Section header")
         }
 
         // MARK: - Credentials
         Section {
           SecureField("sk-...", text: $apiKey)
         } header: {
-          Text("API Key")
+          Text("API Key", comment: "Section header")
         } footer: {
-          Text("Your key is stored securely on device.")
+          Text("Your key is stored securely on device.", comment: "Security note")
         }
 
         // MARK: - Advanced Config
@@ -135,7 +135,7 @@ struct SettingsView: View {
           }
         }
       }
-      .navigationTitle("AI Settings")
+      .navigationTitle(Text("AI Settings", comment: "Page title"))
       .toolbar {
         ToolbarItem(placement: .topBarTrailing) {
           Button("Done") {

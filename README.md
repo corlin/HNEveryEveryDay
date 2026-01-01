@@ -47,6 +47,14 @@ Get the "Hacker Perspective" in seconds.
 - **Deep Context**: Export includes Metadata, AI Summary, and Key Comments. Perfect for Obsidian/Notion.
 - **Read History**: Automatically tracks what you've read (Gray links).
 
+### 🌏 Globalization (v0.03)
+- **Chinese Support**: Full UI localization for Simplified Chinese (简体中文).
+- **Contextual AI**: The AI automatically detects your language and summarizes English articles *in Chinese* if your system language is set to Chinese.
+
+### 🛡️ Robustness (v0.03)
+- **Smart Retries**: AI Service includes exponential backoff retry logic (3x) to handle unstable networks.
+- **Fail Gracefully**: Improved error UI guides you to fix API keys or network issues.
+
 ---
 
 ## 🛠 Tech Stack
