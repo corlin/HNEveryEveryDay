@@ -55,6 +55,15 @@ Get the "Hacker Perspective" in seconds.
 - **Smart Retries**: AI Service includes exponential backoff retry logic (3x) to handle unstable networks.
 - **Fail Gracefully**: Improved error UI guides you to fix API keys or network issues.
 
+### ⚙️ Unified Settings (v0.04)
+- **One-Stop Config**: AI Provider, Language Preference, and Cache Retention all in one place.
+- **Onboarding**: First-launch welcome screen highlighting key features.
+
+### 🔖 Complete & Polish (v0.05)
+- **Bookmarks**: Swipe left to save stories for later. Filter by "Saved" in the menu.
+- **Keychain Security**: API keys are now stored in iOS Keychain (not UserDefaults).
+- **Skeleton Loading**: Shimmer animation while the feed loads for a premium feel.
+
 ---
 
 ## 🛠 Tech Stack
