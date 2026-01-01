@@ -47,3 +47,29 @@
 "Base URL" = "服务器地址";
 "Model Name" = "模型名称";
 "Done" = "完成";
+
+/* General Settings */
+"General" = "通用设置";
+"AI Response Language" = "AI 回复语言";
+"System Default" = "跟随系统";
+"English" = "English";
+"Keep History: %lld Days" = "历史保留: %lld 天";
+"Controls how long read articles are cached locally." = "控制已读文章在本地缓存的时长。";
+
+/* About */
+"About" = "关于";
+"Version" = "版本";
+"GitHub" = "GitHub";
+
+/* Onboarding */
+"HNEveryDay" = "HNEveryDay";
+"Geeker Edition" = "极客版";
+"Get Started" = "开始使用";
+"120fps Feed" = "120fps 信息流";
+"Buttery smooth scrolling optimized for speed." = "针对速度优化的丝滑滚动体验。";
+"Smart Reader" = "智能阅读器";
+"Ad-free, distraction-free article parsing." = "无广告、无干扰的文章解析。";
+"AI Summaries" = "AI 智能总结";
+"Get the gist of article + discussion in seconds." = "秒级获取文章与讨论的核心要点。";
+"Knowledge Export" = "知识导出";
+"One-tap Markdown export for Obsidian/Notion." = "一键导出 Markdown，适配 Obsidian/Notion。";

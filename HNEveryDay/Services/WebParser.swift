@@ -54,7 +54,7 @@ class WebParser: NSObject, WKNavigationDelegate {
     // Hardcoded path for this environment purely for reliability in this session
     let path = "/Users/corlin/appdev/HNEveryDay/HNEveryDay/Utilities/Readability.js"
     if FileManager.default.fileExists(atPath: path) {
-      return try? String(contentsOfFile: path)
+      return try? String(contentsOfFile: path, encoding: .utf8)
     }
     return nil
   }

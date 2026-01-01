@@ -45,10 +45,15 @@ class DataService: ObservableObject {
     }
   }
 
-  func cleanupOldEntries(days: Int = 30) {
+  func cleanupOldEntries() {
     Task {  // Run on background
       let context = ModelContext(container)
+      // Read user preference, default to 30 days
+      let storedDays = UserDefaults.standard.integer(forKey: "cache_retention_days")
+      let days = storedDays > 0 ? storedDays : 30
       let cutoffDate = Calendar.current.date(byAdding: .day, value: -days, to: Date()) ?? Date()
+
+      print("🧹 Housekeeping: Cleaning entries older than \(days) days.")
 
       let descriptor = FetchDescriptor<CachedStory>(
         predicate: #Predicate {

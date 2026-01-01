@@ -59,8 +59,14 @@ final class AIService: Sendable {
       prompt += "URL: \(url)\n"
     }
 
-    // Localization Check
-    let isChinese = Locale.current.identifier.lowercased().starts(with: "zh")
+    // Localization Check - Respect user preference
+    let preferredLang = UserDefaults.standard.string(forKey: "preferred_language") ?? "system"
+    let isChinese: Bool
+    if preferredLang == "system" {
+      isChinese = Locale.current.identifier.lowercased().starts(with: "zh")
+    } else {
+      isChinese = preferredLang == "zh-Hans"
+    }
     let langInstruction = isChinese ? "Answer in Simplified Chinese (简体中文)." : ""
 
     if let content = articleContent, !content.isEmpty {

@@ -8,9 +8,14 @@
 import SwiftUI
 
 struct SettingsView: View {
+  // AI Configuration
   @AppStorage("ai_api_key") private var apiKey: String = ""
   @AppStorage("ai_base_url") private var baseURL: String = "https://api.openai.com/v1"
   @AppStorage("ai_model") private var model: String = "gpt-3.5-turbo"
+
+  // General Settings
+  @AppStorage("preferred_language") private var preferredLanguage: String = "system"
+  @AppStorage("cache_retention_days") private var cacheRetentionDays: Int = 30
 
   @Environment(\.dismiss) private var dismiss
 
@@ -134,8 +139,38 @@ struct SettingsView: View {
             .foregroundStyle(.secondary)
           }
         }
+
+        // MARK: - General Settings
+        Section {
+          Picker("AI Response Language", selection: $preferredLanguage) {
+            Text("System Default", comment: "Follow device language").tag("system")
+            Text("English").tag("en")
+            Text("简体中文").tag("zh-Hans")
+          }
+
+          Stepper(
+            "Keep History: \(cacheRetentionDays) Days", value: $cacheRetentionDays, in: 7...90,
+            step: 7)
+        } header: {
+          Text("General", comment: "Section header")
+        } footer: {
+          Text("Controls how long read articles are cached locally.", comment: "Cache explanation")
+        }
+
+        // MARK: - About
+        Section("About") {
+          LabeledContent("Version", value: "0.04")
+          Link(destination: URL(string: "https://github.com/corlin/HNEveryDay")!) {
+            HStack {
+              Text("GitHub")
+              Spacer()
+              Image(systemName: "arrow.up.right.square")
+                .foregroundStyle(.secondary)
+            }
+          }
+        }
       }
-      .navigationTitle(Text("AI Settings", comment: "Page title"))
+      .navigationTitle(Text("Settings", comment: "Page title"))
       .toolbar {
         ToolbarItem(placement: .topBarTrailing) {
           Button("Done") {
