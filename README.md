@@ -4,6 +4,10 @@
   <img src="HNEveryDay/Assets.xcassets/AppIcon.appiconset/HNEveryDay_Icon.png" width="120" alt="HNEveryDay Icon" />
 </p>
 
+<p align="center">
+  <a href="README.md">English</a> | <a href="README_ZH.md">简体中文</a>
+</p>
+
 **HNEveryDay** is a high-performance, privacy-first, AI-enhanced Hacker News client for iOS, built specifically for Geekers who live in the terminal and dream in code.
 
 It combines the raw information density favored by hackers with the fluid, tactile experience of a modern native iOS app.
