@@ -85,7 +85,23 @@ final class AIService: Sendable {
     }
 
     prompt +=
-      "\nTask: Please provide a concise summary. 1. Summarize the Article's core value proposition or main argument. 2. Summarize the Key Discussion/Debate from the comments. Keep it under 300 words. Format in Markdown. \(langInstruction)"
+      """
+
+      Task: Provide a well-structured summary using the following format:
+
+      ## 📝 文章核心
+      [2-3 sentences summarizing the article's core value proposition]
+
+      ## 💬 讨论焦点
+      - **[Key Point 1]**: [Brief explanation]
+      - **[Key Point 2]**: [Brief explanation]  
+      - **[Key Point 3]**: [Brief explanation]
+
+      ## 🎯 结论
+      [1-2 sentences with your synthesis]
+
+      Keep it concise (under 250 words). Use bullet points for clarity. \(langInstruction)
+      """
 
     // Build Request
     let requestBody = ChatRequest(

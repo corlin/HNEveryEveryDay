@@ -49,10 +49,8 @@ struct SummaryView: View {
             .background(Color.red.opacity(0.1))
             .cornerRadius(12)
           } else {
-            // Success State
-            Text(try! AttributedString(markdown: summaryText))  // Basic Markdown parsing
-              .font(.system(size: 16, design: .serif))
-              .lineSpacing(6)
+            // Success State - Custom Markdown Rendering
+            MarkdownContentView(content: summaryText)
           }
         }
         .padding()
