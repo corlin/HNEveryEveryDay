@@ -5,10 +5,15 @@
 //  Created by AI on 01/01/2026.
 //
 
+import SwiftData
 import SwiftUI
 
 struct StoryRowView: View {
   let item: HNItem
+
+  let isRead: Bool
+
+  // No more @Query here. Performance +++.
 
   var body: some View {
     HStack(alignment: .top, spacing: 12) {
@@ -30,6 +35,7 @@ struct StoryRowView: View {
       VStack(alignment: .leading, spacing: 6) {
         Text(item.title ?? "Untitled")
           .font(.system(size: 16, weight: .medium))
+          .foregroundStyle(isRead ? .secondary : .primary)
           .lineLimit(3)
           .fixedSize(horizontal: false, vertical: true)
 
@@ -87,7 +93,8 @@ struct StoryRowView: View {
       parent: nil,
       deleted: nil,
       dead: nil
-    )
+    ),
+    isRead: false
   )
   .padding()
 }

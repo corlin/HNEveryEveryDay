@@ -5,6 +5,7 @@
 //  Created by 陈永林 on 01/01/2026.
 //
 
+import SwiftData
 import SwiftUI
 
 @main
@@ -13,5 +14,6 @@ struct HNEveryDayApp: App {
     WindowGroup {
       ContentView()
     }
+    .modelContainer(DataService.shared.container)
   }
 }

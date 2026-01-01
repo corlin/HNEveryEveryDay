@@ -9,6 +9,7 @@ import SwiftUI
 
 struct FeedView: View {
   @State private var viewModel = FeedViewModel()
+  @ObservedObject private var dataService = DataService.shared
   @State private var showSettings = false
 
   var body: some View {
@@ -16,7 +17,7 @@ struct FeedView: View {
       List {
         ForEach(viewModel.stories) { story in
           NavigationLink(destination: ItemDetailView(item: story)) {
-            StoryRowView(item: story)
+            StoryRowView(item: story, isRead: dataService.readStoryIds.contains(story.id))
           }
           .onAppear {
             if story.id == viewModel.stories.last?.id {
@@ -83,6 +84,8 @@ struct FeedView: View {
       if viewModel.stories.isEmpty {
         await viewModel.refresh()
       }
+      // Housekeeping
+      dataService.cleanupOldEntries()
     }
   }
 }

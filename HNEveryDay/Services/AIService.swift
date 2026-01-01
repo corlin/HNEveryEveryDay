@@ -37,7 +37,9 @@ final class AIService: Sendable {
   }
 
   // Core Logic
-  func summarize(title: String, url: String?, comments: [String]) async throws -> String {
+  func summarize(title: String, url: String?, articleContent: String?, comments: [String])
+    async throws -> String
+  {
     let apiKey = UserDefaults.standard.string(forKey: "ai_api_key") ?? ""
     let baseUrl = UserDefaults.standard.string(forKey: "ai_base_url") ?? "https://api.openai.com/v1"
     let model = UserDefaults.standard.string(forKey: "ai_model") ?? "gpt-3.5-turbo"
@@ -56,6 +58,13 @@ final class AIService: Sendable {
     if let url = url {
       prompt += "URL: \(url)\n"
     }
+
+    if let content = articleContent, !content.isEmpty {
+      prompt += "\nArticle Content (Excerpt):\n"
+      // Limit article content to avoid context overflow (approx 1000 chars or reasonable limit)
+      prompt += "\(content.prefix(2000))...\n"
+    }
+
     prompt += "\nTop Comments:\n"
     for comment in comments.prefix(20) {  // Limit to top 20 comments to fit context window
       // Strip excessive newlines and HTML tags roughly
@@ -65,7 +74,7 @@ final class AIService: Sendable {
     }
 
     prompt +=
-      "\nTask: Please provide a concise summary of the discussion. Highlight the main points of the article (if inferred) and, more importantly, the key insights, debates, or critiques from the comments. Keep it under 200 words. Format in Markdown."
+      "\nTask: Please provide a concise summary. 1. Summarize the Article's core value proposition or main argument. 2. Summarize the Key Discussion/Debate from the comments. Keep it under 300 words. Format in Markdown."
 
     // Build Request
     let requestBody = ChatRequest(
@@ -76,6 +85,8 @@ final class AIService: Sendable {
       ],
       temperature: 0.7
     )
+
+    print("🤖 AI Prompt: \(prompt)")
 
     let endpoint =
       URL(string: baseUrl)?.appendingPathComponent("chat/completions") ?? URL(

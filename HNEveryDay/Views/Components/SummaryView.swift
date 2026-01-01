@@ -10,6 +10,8 @@ import SwiftUI
 struct SummaryView: View {
   let item: HNItem
   let comments: [CommentNode]
+  let article: ParsedArticle?
+  var onSummaryGenerated: ((String) -> Void)?
 
   @State private var summaryText: String = ""
   @State private var isLoading = true
@@ -76,11 +78,13 @@ struct SummaryView: View {
       let result = try await AIService.shared.summarize(
         title: item.title ?? "Unknown",
         url: item.url,
+        articleContent: article?.textContent,
         comments: commentTexts
       )
       await MainActor.run {
         self.summaryText = result
         self.isLoading = false
+        self.onSummaryGenerated?(result)
         UINotificationFeedbackGenerator().notificationOccurred(.success)
       }
     } catch {

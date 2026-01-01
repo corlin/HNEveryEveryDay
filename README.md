@@ -37,12 +37,23 @@ Get the "Hacker Perspective" in seconds.
 - **Haptic Feedback**: Tactile confirmation for collapsing threads and AI completion.
 - **Pure Dark Mode**: Designed for OLED displays.
 
+### 📖 Native Smart Reader (v0.02)
+- **Distraction Free**: Removes ads, popups, and clutter. Just the text.
+- **Geeker Styled**: Dark mode verified; Code blocks rendered with monospaced fonts and horizontal scrolling.
+- **Offline Ready**: Automatically caches article content for subway reading.
+
+### 🧠 Knowledge Engine (v0.02)
+- **Markdown Export**: Share -> "Square & Arrow" -> Generates a formatted research note.
+- **Deep Context**: Export includes Metadata, AI Summary, and Key Comments. Perfect for Obsidian/Notion.
+- **Read History**: Automatically tracks what you've read (Gray links).
+
 ---
 
 ## 🛠 Tech Stack
 
 - **Language**: Swift 6
 - **UI Framework**: SwiftUI (iOS 17+)
+- **Persistence**: **SwiftData** with optimized "Read-Through" caching.
 - **Concurrency**: Swift 6 `async/await`, `Actors` for thread-safe data fetching.
 - **State Management**: MVVM + Observation Framework (`@Observable`).
 - **Networking**: Custom `URLSession` wrapper interacting with Hacker News Firebase API.
@@ -65,7 +76,7 @@ Get the "Hacker Perspective" in seconds.
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/corlin/HNEveryEveryDay.git
+   git clone https://github.com/corlin/HNEveryDay.git
    ```
 2. Open `HNEveryDay.xcodeproj` in Xcode 15+.
 3. Build and Run on your iPhone or Simulator.

@@ -17,6 +17,19 @@ struct ItemDetailView: View {
   @State private var showSummary = false
   @State private var collapsedCommentIds: Set<Int> = []
 
+  // Reader Mode State
+  @State private var parsedArticle: ParsedArticle?
+  @State private var isParsingArticle = false
+  @State private var showReaderMode = true  // Default to true
+
+  // Export State
+  struct ExportData: Identifiable {
+    let id = UUID()
+    let text: String
+  }
+  @State private var exportData: ExportData?
+  @State private var summaryTextForExport: String?
+
   var body: some View {
     VStack(spacing: 0) {
       // MARK: - Picker
@@ -31,10 +44,25 @@ struct ItemDetailView: View {
 
       // MARK: - Content
       TabView(selection: $selectedMode) {
-        // ADDED: Article View
+        // MODIFIED: Article View with Smart Reader
         Group {
           if let url = item.urlObj {
-            WebView(url: url)
+            if showReaderMode, let article = parsedArticle {
+              ReaderView(article: article)
+                .transition(.opacity)
+            } else if showReaderMode && isParsingArticle {
+              VStack {
+                ProgressView("Optimizing for Reader...")
+                  .padding()
+                Text("Parsing content locally to remove ads and clutter.")
+                  .font(.caption)
+                  .foregroundStyle(.secondary)
+              }
+            } else {
+              // Fallback to Webview
+              WebView(url: url)
+                .transition(.opacity)
+            }
           } else if item.text != nil {
             ScrollView {
               Text(HTMLHelper.parse(item.text ?? ""))
@@ -46,7 +74,7 @@ struct ItemDetailView: View {
         }
         .tag(0)
 
-        // ADDED: Comments View
+        // Comments View (Unchanged)
         Group {
           if isLoadingComments {
             ProgressView("Loading Thread...")
@@ -86,6 +114,29 @@ struct ItemDetailView: View {
     }
     .navigationBarTitleDisplayMode(.inline)
     .toolbar {
+      // Reader Toggle
+      if selectedMode == 0 && item.urlObj != nil {
+        ToolbarItem(placement: .topBarTrailing) {
+          Button {
+            withAnimation {
+              showReaderMode.toggle()
+            }
+          } label: {
+            Image(systemName: showReaderMode ? "doc.plaintext.fill" : "globe")
+              .foregroundStyle(showReaderMode ? .orange : .primary)
+          }
+        }
+      }
+
+      // Export Button
+      ToolbarItem(placement: .topBarTrailing) {
+        Button {
+          generateExport()
+        } label: {
+          Image(systemName: "square.and.arrow.up")
+        }
+      }
+
       ToolbarItem(placement: .topBarTrailing) {
         Button {
           showSummary = true
@@ -94,19 +145,71 @@ struct ItemDetailView: View {
         }
       }
     }
-    .sheet(isPresented: $showSummary) {
-      SummaryView(item: item, comments: comments)
+    // Share Sheet
+    .sheet(item: $exportData) { data in
+      ShareSheet(activityItems: [data.text])
         .presentationDetents([.medium, .large])
     }
+    .sheet(isPresented: $showSummary) {
+      SummaryView(
+        item: item, comments: flattenedComments, article: parsedArticle,
+        onSummaryGenerated: { summary in
+          self.summaryTextForExport = summary
+        }
+      )
+      .presentationDetents([.medium, .large])
+    }
     .task {
-      await loadComments()
+      // Parallel load: Comments AND Reader Parsing
+      await withTaskGroup(of: Void.self) { group in
+        group.addTask { await loadComments() }
+        group.addTask { await loadArticleContent() }
+      }
     }
     // Force comments mode if no URL
     .onAppear {
+      DataService.shared.markAsRead(item: item)
       if item.url == nil {
         selectedMode = 1
       }
     }
+  }
+
+  private func loadArticleContent() async {
+    guard let url = item.urlObj else { return }
+    guard parsedArticle == nil else { return }
+
+    isParsingArticle = true
+    do {
+      // Attempt to parse
+      let article = try await WebParser.shared.parse(url: url)
+      await MainActor.run {
+        self.parsedArticle = article
+        // Save to Persistence
+        if let html = article.contentHTML {
+          DataService.shared.saveContent(id: item.id, content: html)
+        }
+      }
+    } catch {
+      print("Reader Parsing failed: \(error). Falling back to Web.")
+      await MainActor.run {
+        // If parsing fails, auto-switch to Web
+        self.showReaderMode = false
+      }
+    }
+    await MainActor.run {
+      self.isParsingArticle = false
+    }
+  }
+
+  private func generateExport() {
+    let md = MarkdownGenerator.generate(
+      item: item,
+      summary: summaryTextForExport,
+      article: parsedArticle,
+      comments: comments
+    )
+    self.exportData = ExportData(text: md)
   }
 
   private func toggleCollapse(_ id: Int) {
@@ -126,17 +229,19 @@ struct ItemDetailView: View {
     guard let kids = item.kids, !kids.isEmpty else { return }
     guard comments.isEmpty else { return }  // already loaded
 
-    isLoadingComments = true
+    await MainActor.run { isLoadingComments = true }
     do {
       let loader = CommentLoader()
       let rootNodes = try await loader.loadComments(for: kids)
-      self.comments = rootNodes
-      // Flatten logic
-      self.flattenedComments = flatten(nodes: rootNodes)
+      await MainActor.run {
+        self.comments = rootNodes
+        // Flatten logic
+        self.flattenedComments = flatten(nodes: rootNodes)
+      }
     } catch {
       print("Failed to load comments: \(error)")
     }
-    isLoadingComments = false
+    await MainActor.run { isLoadingComments = false }
   }
 
   // DFS flattening with Collapse check
