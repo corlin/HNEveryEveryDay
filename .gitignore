@@ -1,3 +1,5 @@
 build/
 private_keys/
 *.DS_Store
+cert.pem
+pubkey.pem
