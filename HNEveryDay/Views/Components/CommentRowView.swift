@@ -30,7 +30,7 @@ struct CommentRowView: View {
           .foregroundStyle(.secondary)
 
         if isCollapsed {
-          Text("• \(node.children.count) replies hidden")
+          Text("• \(hiddenReplyText)")
             .font(.caption)
             .foregroundStyle(.orange)
           Spacer()
@@ -77,5 +77,13 @@ struct CommentRowView: View {
         displayText = "[deleted]"
       }
     }
+  }
+
+  private var hiddenReplyText: String {
+    let count = node.descendantCount
+    if count == 1 {
+      return "1 reply hidden"
+    }
+    return "\(count) replies hidden"
   }
 }

@@ -275,7 +275,7 @@ struct ItemDetailView: View {
       collapsedCommentIds.insert(id)
     }
     // Re-calculate flattened list
-    self.flattenedComments = flatten(nodes: comments)
+    self.flattenedComments = CommentNode.flattened(comments, collapsedIds: collapsedCommentIds)
   }
 
   private func loadComments() async {
@@ -289,25 +289,15 @@ struct ItemDetailView: View {
       await MainActor.run {
         self.comments = rootNodes
         // Flatten logic
-        self.flattenedComments = flatten(nodes: rootNodes)
+        self.flattenedComments = CommentNode.flattened(
+          rootNodes,
+          collapsedIds: collapsedCommentIds
+        )
       }
     } catch {
       print("Failed to load comments: \(error)")
     }
     await MainActor.run { isLoadingComments = false }
-  }
-
-  // DFS flattening with Collapse check
-  private func flatten(nodes: [CommentNode]) -> [CommentNode] {
-    var result: [CommentNode] = []
-    for node in nodes {
-      result.append(node)
-      // If NOT collapsed, include children
-      if !collapsedCommentIds.contains(node.id) && !node.children.isEmpty {
-        result.append(contentsOf: flatten(nodes: node.children))
-      }
-    }
-    return result
   }
 }
 

@@ -14,5 +14,20 @@ struct CommentNode: Identifiable, Equatable {
   var children: [CommentNode] = []
   var isExpanded: Bool = true
 
-  // Flattened list helper could go here, or in the ViewModel
+  var descendantCount: Int {
+    children.reduce(children.count) { count, child in
+      count + child.descendantCount
+    }
+  }
+
+  static func flattened(_ nodes: [CommentNode], collapsedIds: Set<Int> = []) -> [CommentNode] {
+    var result: [CommentNode] = []
+    for node in nodes {
+      result.append(node)
+      if !collapsedIds.contains(node.id) && !node.children.isEmpty {
+        result.append(contentsOf: flattened(node.children, collapsedIds: collapsedIds))
+      }
+    }
+    return result
+  }
 }
