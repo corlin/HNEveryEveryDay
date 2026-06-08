@@ -6,8 +6,19 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXContainerItemProxy section */
+		A10000072F0A000000000001 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 98FFB2D62F064A2300D5AC18 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 98FFB2DD2F064A2300D5AC18;
+			remoteInfo = HNEveryDay;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
 		98FFB2DE2F064A2300D5AC18 /* HNEveryDay.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HNEveryDay.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A10000022F0A000000000001 /* HNEveryDayTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = HNEveryDayTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -16,10 +27,22 @@
 			path = HNEveryDay;
 			sourceTree = "<group>";
 		};
+		A10000012F0A000000000001 /* HNEveryDayTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = HNEveryDayTests;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		98FFB2DB2F064A2300D5AC18 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A10000032F0A000000000001 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -33,6 +56,7 @@
 			isa = PBXGroup;
 			children = (
 				98FFB2E02F064A2300D5AC18 /* HNEveryDay */,
+				A10000012F0A000000000001 /* HNEveryDayTests */,
 				98FFB2DF2F064A2300D5AC18 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -41,6 +65,7 @@
 			isa = PBXGroup;
 			children = (
 				98FFB2DE2F064A2300D5AC18 /* HNEveryDay.app */,
+				A10000022F0A000000000001 /* HNEveryDayTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -70,6 +95,29 @@
 			productReference = 98FFB2DE2F064A2300D5AC18 /* HNEveryDay.app */;
 			productType = "com.apple.product-type.application";
 		};
+		A10000062F0A000000000001 /* HNEveryDayTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A100000B2F0A000000000001 /* Build configuration list for PBXNativeTarget "HNEveryDayTests" */;
+			buildPhases = (
+				A10000042F0A000000000001 /* Sources */,
+				A10000032F0A000000000001 /* Frameworks */,
+				A10000052F0A000000000001 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				A10000082F0A000000000001 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				A10000012F0A000000000001 /* HNEveryDayTests */,
+			);
+			name = HNEveryDayTests;
+			packageProductDependencies = (
+			);
+			productName = HNEveryDayTests;
+			productReference = A10000022F0A000000000001 /* HNEveryDayTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -82,6 +130,10 @@
 				TargetAttributes = {
 					98FFB2DD2F064A2300D5AC18 = {
 						CreatedOnToolsVersion = 26.2;
+					};
+					A10000062F0A000000000001 = {
+						CreatedOnToolsVersion = 26.2;
+						TestTargetID = 98FFB2DD2F064A2300D5AC18;
 					};
 				};
 			};
@@ -101,12 +153,20 @@
 			projectRoot = "";
 			targets = (
 				98FFB2DD2F064A2300D5AC18 /* HNEveryDay */,
+				A10000062F0A000000000001 /* HNEveryDayTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		98FFB2DC2F064A2300D5AC18 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A10000052F0A000000000001 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -123,7 +183,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		A10000042F0A000000000001 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		A10000082F0A000000000001 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 98FFB2DD2F064A2300D5AC18 /* HNEveryDay */;
+			targetProxy = A10000072F0A000000000001 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		98FFB2E92F064A2500D5AC18 /* Debug */ = {
@@ -325,6 +400,58 @@
 			};
 			name = Release;
 		};
+		A10000092F0A000000000001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 5M726V7N7X;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.6;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = cn.corlin.hneveryday.HNEveryDayTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/HNEveryDay.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/HNEveryDay";
+			};
+			name = Debug;
+		};
+		A100000A2F0A000000000001 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 5M726V7N7X;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.6;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = cn.corlin.hneveryday.HNEveryDayTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/HNEveryDay.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/HNEveryDay";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -342,6 +469,15 @@
 			buildConfigurations = (
 				98FFB2EC2F064A2500D5AC18 /* Debug */,
 				98FFB2ED2F064A2500D5AC18 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A100000B2F0A000000000001 /* Build configuration list for PBXNativeTarget "HNEveryDayTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A10000092F0A000000000001 /* Debug */,
+				A100000A2F0A000000000001 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
