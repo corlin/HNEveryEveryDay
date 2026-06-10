@@ -18,6 +18,7 @@ struct ItemDetailView: View {
   @State private var flattenedComments: [CommentNode] = []
   @State private var isLoadingComments = false
   @State private var showSummary = false
+  @State private var isPreparingSummary = false
   @State private var collapsedCommentIds: Set<Int> = []
 
   // Reader Mode State
@@ -53,14 +54,7 @@ struct ItemDetailView: View {
   var body: some View {
     VStack(spacing: 0) {
       // MARK: - Picker
-      Picker("Mode", selection: $selectedMode) {
-        Text("Article", comment: "Read mode").tag(0)
-        Text("Comments", comment: "Discussion mode").tag(1)
-      }
-      .pickerStyle(.segmented)
-      .padding()
-      .background(Color(.systemBackground))
-      .zIndex(1)
+      modePickerBar
 
       // MARK: - Content
       TabView(selection: $selectedMode) {
@@ -69,20 +63,7 @@ struct ItemDetailView: View {
           if let url = currentItem.urlObj {
             if showReaderMode, let article = parsedArticle {
               VStack(spacing: 0) {
-                if isTranslatingArticle {
-                  ProgressView("Translating article...")
-                    .padding(.vertical, 10)
-                    .frame(maxWidth: .infinity)
-                    .background(Color(.secondarySystemBackground))
-                } else if let translationError {
-                  Text(translationError)
-                    .font(.caption)
-                    .foregroundStyle(.orange)
-                    .padding(.vertical, 10)
-                    .padding(.horizontal, 16)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(Color(.secondarySystemBackground))
-                }
+                articleStatusBanner
 
                 if showTranslatedArticle, let translatedArticleMarkdown {
                   TranslatedReaderView(
@@ -110,6 +91,8 @@ struct ItemDetailView: View {
                 .font(.caption)
                 .foregroundStyle(.secondary)
               }
+              .frame(maxWidth: .infinity, maxHeight: .infinity)
+              .background(Color(.systemGroupedBackground))
             } else {
               // Fallback to Webview
               WebView(url: url)
@@ -120,8 +103,10 @@ struct ItemDetailView: View {
               Text(HTMLHelper.parse(currentItem.text ?? ""))
                 .padding()
             }
+            .background(Color(.systemGroupedBackground))
           } else {
             ContentUnavailableView("No URL", systemImage: "link.badge.plus")
+              .background(Color(.systemGroupedBackground))
           }
         }
         .tag(0)
@@ -138,7 +123,9 @@ struct ItemDetailView: View {
               VStack(alignment: .leading, spacing: 8) {
                 Text(currentItem.title ?? "")
                   .font(.headline)
-                HStack {
+                  .fixedSize(horizontal: false, vertical: true)
+
+                HStack(spacing: 10) {
                   Text("\(currentItem.score ?? 0) points")
                   Text("by \(currentItem.by ?? "")")  // 'by' is hard to localize elegantly in concatenation, will leave as is or use a format string
                   Text(currentItem.time.shortTimeAgo)
@@ -146,24 +133,39 @@ struct ItemDetailView: View {
                 .font(.caption)
                 .foregroundStyle(.secondary)
               }
+              .padding(.horizontal, 12)
+              .padding(.vertical, 12)
+              .background(Color(.secondarySystemGroupedBackground))
+              .clipShape(RoundedRectangle(cornerRadius: 8))
+              .overlay(
+                RoundedRectangle(cornerRadius: 8)
+                  .strokeBorder(Color.primary.opacity(0.06), lineWidth: 1)
+              )
               .listRowSeparator(.hidden)
+              .listRowInsets(EdgeInsets(top: 8, leading: 12, bottom: 6, trailing: 12))
+              .listRowBackground(Color.clear)
 
               ForEach(flattenedComments) { node in
                 CommentRowView(node: node, isCollapsed: collapsedCommentIds.contains(node.id))
                   .listRowSeparator(.hidden)
                   .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
+                  .listRowBackground(Color.clear)
                   .onTapGesture {
                     toggleCollapse(node.id)
                   }
               }
             }
             .listStyle(.plain)
+            .scrollContentBackground(.hidden)
+            .background(Color(.systemGroupedBackground))
           }
         }
         .tag(1)
       }
       .tabViewStyle(.page(indexDisplayMode: .never))  // Swipe left/right
+      .background(Color(.systemGroupedBackground))
     }
+    .background(Color(.systemGroupedBackground))
     .navigationBarTitleDisplayMode(.inline)
     .toolbar {
       // Reader Toggle
@@ -208,10 +210,17 @@ struct ItemDetailView: View {
 
       ToolbarItem(placement: .topBarTrailing) {
         Button {
-          showSummary = true
+          Task { await presentSummary() }
         } label: {
-          Image(systemName: "sparkles")
+          if isPreparingSummary {
+            ProgressView()
+              .controlSize(.mini)
+          } else {
+            Image(systemName: "sparkles")
+          }
         }
+        .disabled(isPreparingSummary)
+        .accessibilityLabel("Summarize Discussion")
       }
     }
     // Share Sheet
@@ -221,8 +230,9 @@ struct ItemDetailView: View {
     }
     .sheet(isPresented: $showSummary) {
       SummaryView(
-        item: currentItem, comments: flattenedComments, article: parsedArticle,
-        initialSummary: summaryTextForExport,
+        item: currentItem, comments: comments, article: parsedArticle,
+        requiresComments: storyHasComments,
+        initialSummary: storyHasComments ? nil : summaryTextForExport,
         onSummaryGenerated: { summary in
           self.summaryTextForExport = summary
         }
@@ -244,6 +254,103 @@ struct ItemDetailView: View {
       if currentItem.url == nil {
         selectedMode = 1
       }
+    }
+  }
+
+  private var modePickerBar: some View {
+    VStack(spacing: 0) {
+      Picker("Mode", selection: $selectedMode) {
+        Text("Article", comment: "Read mode").tag(0)
+        Text("Comments", comment: "Discussion mode").tag(1)
+      }
+      .pickerStyle(.segmented)
+      .padding(.horizontal, 16)
+      .padding(.top, 10)
+      .padding(.bottom, 8)
+    }
+    .background(Color(.systemGroupedBackground))
+    .overlay(alignment: .bottom) {
+      Rectangle()
+        .fill(Color.primary.opacity(0.06))
+        .frame(height: 1)
+    }
+    .zIndex(1)
+  }
+
+  @ViewBuilder
+  private var articleStatusBanner: some View {
+    if isTranslatingArticle {
+      HStack(spacing: 8) {
+        ProgressView()
+          .controlSize(.mini)
+        Text("Translating article...")
+          .font(.caption)
+          .foregroundStyle(.secondary)
+        Spacer(minLength: 0)
+      }
+      .padding(.horizontal, 14)
+      .padding(.vertical, 9)
+      .background(Color(.secondarySystemGroupedBackground))
+      .clipShape(RoundedRectangle(cornerRadius: 8))
+      .padding(.horizontal, 12)
+      .padding(.top, 8)
+      .padding(.bottom, 4)
+    } else if let translationError {
+      HStack(alignment: .top, spacing: 8) {
+        Image(systemName: "exclamationmark.triangle.fill")
+          .font(.caption)
+          .foregroundStyle(.orange)
+          .padding(.top, 1)
+
+        Text(translationError)
+          .font(.caption)
+          .foregroundStyle(.secondary)
+          .fixedSize(horizontal: false, vertical: true)
+
+        Spacer(minLength: 0)
+      }
+      .padding(.horizontal, 14)
+      .padding(.vertical, 9)
+      .background(Color(.secondarySystemGroupedBackground))
+      .clipShape(RoundedRectangle(cornerRadius: 8))
+      .overlay(
+        RoundedRectangle(cornerRadius: 8)
+          .strokeBorder(Color.orange.opacity(0.22), lineWidth: 1)
+      )
+      .padding(.horizontal, 12)
+      .padding(.top, 8)
+      .padding(.bottom, 4)
+    }
+  }
+
+  private var storyHasComments: Bool {
+    currentItem.kids?.isEmpty == false
+  }
+
+  private func presentSummary() async {
+    await MainActor.run {
+      isPreparingSummary = true
+    }
+
+    await hydrateItemIfNeeded()
+
+    if storyHasComments && comments.isEmpty {
+      if isLoadingComments {
+        await waitForCommentsToFinishLoading()
+      } else {
+        await loadComments()
+      }
+    }
+
+    await MainActor.run {
+      isPreparingSummary = false
+      showSummary = true
+    }
+  }
+
+  private func waitForCommentsToFinishLoading() async {
+    while isLoadingComments {
+      try? await Task.sleep(nanoseconds: 150_000_000)
     }
   }
 
@@ -426,6 +533,7 @@ struct ItemDetailView: View {
   private func loadComments() async {
     guard let kids = currentItem.kids, !kids.isEmpty else { return }
     guard comments.isEmpty else { return }  // already loaded
+    guard !isLoadingComments else { return }
 
     await MainActor.run { isLoadingComments = true }
     do {

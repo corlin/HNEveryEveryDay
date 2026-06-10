@@ -21,7 +21,7 @@ struct SettingsView: View {
   @Environment(\.dismiss) private var dismiss
 
   private var appVersion: String {
-    Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0"
+    Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.1"
   }
 
   // Provider Preset Logic

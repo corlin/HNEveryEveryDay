@@ -15,33 +15,47 @@ struct TranslatedReaderView: View {
 
   var body: some View {
     ScrollView {
-      VStack(alignment: .leading, spacing: 16) {
-        VStack(alignment: .leading, spacing: 6) {
+      VStack(alignment: .leading, spacing: 18) {
+        VStack(alignment: .leading, spacing: 10) {
           Text(title)
-            .font(.system(size: 28, weight: .bold))
+            .font(.system(size: 24, weight: .bold))
             .foregroundStyle(.primary)
             .fixedSize(horizontal: false, vertical: true)
 
-          HStack(spacing: 8) {
+          HStack(spacing: 7) {
             Text(byline ?? String(localized: "Unknown Source"))
-            Text("|")
+              .lineLimit(1)
+            Circle()
+              .fill(Color.secondary.opacity(0.45))
+              .frame(width: 3, height: 3)
             Text(ReadingLanguage.displayName(for: targetLanguage))
           }
-          .font(.caption)
+          .font(.system(size: 11, weight: .medium))
           .fontDesign(.monospaced)
           .foregroundStyle(.secondary)
+          .padding(.horizontal, 8)
+          .padding(.vertical, 4)
+          .background(Color.primary.opacity(0.055))
+          .clipShape(RoundedRectangle(cornerRadius: 6))
         }
-
-        Divider()
-          .overlay(Color.secondary.opacity(0.25))
+        .padding(.horizontal, 14)
+        .padding(.vertical, 14)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color(.secondarySystemGroupedBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .overlay(
+          RoundedRectangle(cornerRadius: 8)
+            .strokeBorder(Color.primary.opacity(0.06), lineWidth: 1)
+        )
 
         MarkdownContentView(content: markdown)
+          .padding(.horizontal, 2)
       }
-      .padding(.horizontal, 16)
-      .padding(.vertical, 20)
+      .padding(.horizontal, 12)
+      .padding(.vertical, 12)
       .frame(maxWidth: .infinity, alignment: .leading)
     }
-    .background(Color(.systemBackground))
+    .background(Color(.systemGroupedBackground))
   }
 }
 
