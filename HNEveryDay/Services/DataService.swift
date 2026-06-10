@@ -169,6 +169,44 @@ class DataService: ObservableObject {
     return (title, markdown)
   }
 
+  func fetchTitleTranslation(id: Int, targetLanguage: String) -> String? {
+    guard let story = fetchCachedStory(id: id),
+      story.translationLanguage == targetLanguage,
+      let title = story.translatedTitle,
+      !title.isEmpty
+    else {
+      return nil
+    }
+
+    return title
+  }
+
+  func saveTitleTranslation(
+    id: Int,
+    title: String,
+    url: String?,
+    targetLanguage: String,
+    translatedTitle: String
+  ) {
+    let context = container.mainContext
+    let descriptor = FetchDescriptor<CachedStory>(predicate: #Predicate { $0.id == id })
+    do {
+      let story: CachedStory
+      if let existing = try context.fetch(descriptor).first {
+        story = existing
+      } else {
+        story = CachedStory(id: id, title: title, url: url)
+        context.insert(story)
+      }
+      story.translatedTitle = translatedTitle
+      story.translationLanguage = targetLanguage
+      story.translationUpdatedAt = Date()
+      try context.save()
+    } catch {
+      print("Failed to save title translation: \(error)")
+    }
+  }
+
   func saveArticleTranslation(
     id: Int,
     title: String,

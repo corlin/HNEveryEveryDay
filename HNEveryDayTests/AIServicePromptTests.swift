@@ -108,4 +108,21 @@ final class AIServicePromptTests: XCTestCase {
     XCTAssertEqual(translation.title, "Translated title")
     XCTAssertEqual(translation.markdown, "Translated body")
   }
+
+  func testTitleTranslationPromptKeepsResponseMinimal() {
+    let prompt = AIService.buildTitleTranslationPrompt(
+      title: "Show HN: A tiny SQLite-backed queue for Swift",
+      targetLanguage: "zh-Hans"
+    )
+
+    XCTAssertTrue(prompt.contains("Return only the translated title."))
+    XCTAssertTrue(prompt.contains("Preserve product names"))
+    XCTAssertTrue(prompt.contains("Simplified Chinese"))
+  }
+
+  func testCleanTranslatedTitleRemovesWrappingQuotes() {
+    let title = AIService.cleanTranslatedTitle("  `\"一个翻译后的标题\"`  ")
+
+    XCTAssertEqual(title, "一个翻译后的标题")
+  }
 }

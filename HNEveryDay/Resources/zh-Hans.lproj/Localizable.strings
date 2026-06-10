@@ -70,6 +70,7 @@
 "Controls how long read articles are cached locally." = "控制已读文章在本地缓存的时长。";
 "Translations use your configured AI provider and are cached locally with read articles." = "翻译会使用您配置的 AI 服务商，并随已读文章缓存在本地。";
 "Translating article..." = "正在翻译文章...";
+"Translating title..." = "正在翻译标题...";
 "Unknown Source" = "未知来源";
 "Show Web Article" = "显示网页原文";
 "Show Reader" = "显示阅读器";

@@ -10,8 +10,21 @@ import SwiftUI
 struct FeedView: View {
   @State private var viewModel = FeedViewModel()
   @ObservedObject private var dataService = DataService.shared
+  @AppStorage("preferred_language") private var preferredLanguage: String = "system"
+  @AppStorage("translation_mode") private var translationModeRaw: String = TranslationMode.off.rawValue
   @State private var showSettings = false
   @State private var showingSavedOnly = false
+  @State private var translatedTitles: [Int: String] = [:]
+  @State private var translatingTitleIds: Set<Int> = []
+  @State private var failedTitleTranslationIds: Set<Int> = []
+
+  private var translationMode: TranslationMode {
+    TranslationMode(rawValue: translationModeRaw) ?? .off
+  }
+
+  private var targetLanguage: String {
+    ReadingLanguage.resolvedCode(preferredLanguage: preferredLanguage)
+  }
 
   var body: some View {
     NavigationStack {
@@ -27,22 +40,18 @@ struct FeedView: View {
             ForEach(savedStories, id: \.id) { cached in
               let savedItem = item(from: cached)
               NavigationLink(destination: ItemDetailView(item: savedItem)) {
-                HStack(alignment: .top, spacing: 12) {
-                  Image(systemName: "bookmark.fill")
-                    .foregroundStyle(.orange)
-                  VStack(alignment: .leading, spacing: 4) {
-                    Text(cached.title)
-                      .font(.headline)
-                    if let url = cached.url {
-                      Text(url)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .lineLimit(1)
-                    }
-                  }
-                }
+                StoryRowView(
+                  item: savedItem,
+                  isRead: true,
+                  isSaved: true,
+                  translatedTitle: translatedTitle(for: savedItem),
+                  isTranslatingTitle: translatingTitleIds.contains(savedItem.id)
+                )
               }
               .padding(.vertical, 4)
+              .task(id: titleTranslationTaskID(for: savedItem)) {
+                await translateTitleIfNeeded(for: savedItem)
+              }
               .swipeActions(edge: .trailing, allowsFullSwipe: true) {
                 Button(role: .destructive) {
                   dataService.toggleSave(item: savedItem)
@@ -58,8 +67,13 @@ struct FeedView: View {
               StoryRowView(
                 item: story,
                 isRead: dataService.readStoryIds.contains(story.id),
-                isSaved: dataService.savedStoryIds.contains(story.id)
+                isSaved: dataService.savedStoryIds.contains(story.id),
+                translatedTitle: translatedTitle(for: story),
+                isTranslatingTitle: translatingTitleIds.contains(story.id)
               )
+            }
+            .task(id: titleTranslationTaskID(for: story)) {
+              await translateTitleIfNeeded(for: story)
             }
             .swipeActions(edge: .trailing, allowsFullSwipe: true) {
               Button {
@@ -176,6 +190,53 @@ struct FeedView: View {
       deleted: nil,
       dead: nil
     )
+  }
+
+  private func translatedTitle(for item: HNItem) -> String? {
+    translatedTitles[item.id]
+      ?? DataService.shared.fetchTitleTranslation(id: item.id, targetLanguage: targetLanguage)
+  }
+
+  private func titleTranslationTaskID(for item: HNItem) -> String {
+    "\(item.id)-\(translationMode.rawValue)-\(targetLanguage)"
+  }
+
+  private func translateTitleIfNeeded(for item: HNItem) async {
+    guard translationMode == .auto else { return }
+    guard let title = item.title, !title.isEmpty else { return }
+    guard translatedTitles[item.id] == nil else { return }
+    guard !translatingTitleIds.contains(item.id) else { return }
+    guard !failedTitleTranslationIds.contains(item.id) else { return }
+
+    if let cached = DataService.shared.fetchTitleTranslation(id: item.id, targetLanguage: targetLanguage) {
+      translatedTitles[item.id] = cached
+      return
+    }
+
+    guard ReadingLanguage.shouldTranslate(sourceText: title, targetLanguage: targetLanguage) else {
+      return
+    }
+
+    translatingTitleIds.insert(item.id)
+    defer { translatingTitleIds.remove(item.id) }
+
+    do {
+      let translatedTitle = try await AIService.shared.translateTitle(
+        title,
+        targetLanguage: targetLanguage
+      )
+      guard !translatedTitle.isEmpty else { return }
+      translatedTitles[item.id] = translatedTitle
+      DataService.shared.saveTitleTranslation(
+        id: item.id,
+        title: title,
+        url: item.url,
+        targetLanguage: targetLanguage,
+        translatedTitle: translatedTitle
+      )
+    } catch {
+      failedTitleTranslationIds.insert(item.id)
+    }
   }
 }
 

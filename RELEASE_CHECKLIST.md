@@ -31,6 +31,7 @@ Last verified: 2026-06-08, 20 unit tests passed.
 - [ ] Story detail opens from the feed.
 - [ ] Reader mode shows parsed article content or falls back to web view cleanly.
 - [ ] Article translation can be enabled from Settings and toggled in Reader mode.
+- [ ] Feed titles auto-translate in Auto mode and show the original title as secondary text.
 - [ ] On-demand translation shows translated title/body and caches the result.
 - [ ] Auto translation only runs when source language differs from the preferred reading language.
 - [ ] Comments tab loads and comment collapse/expand works.

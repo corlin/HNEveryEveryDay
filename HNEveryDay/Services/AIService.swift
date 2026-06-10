@@ -110,6 +110,34 @@ final class AIService: Sendable {
     return try Self.decodeArticleTranslation(response)
   }
 
+  func translateTitle(
+    _ title: String,
+    targetLanguage: String
+  ) async throws -> String {
+    let apiKey = KeychainHelper.read(key: "ai_api_key") ?? ""
+    let baseUrl = UserDefaults.standard.string(forKey: "ai_base_url") ?? AIDefaults.baseURL
+    let model = UserDefaults.standard.string(forKey: "ai_model") ?? AIDefaults.model
+
+    guard !apiKey.isEmpty else {
+      throw NSError(
+        domain: "AIService", code: 401,
+        userInfo: [
+          NSLocalizedDescriptionKey: "API Key is missing. Please configure it in Settings."
+        ])
+    }
+
+    let response = try await sendChatCompletion(
+      apiKey: apiKey,
+      baseUrl: baseUrl,
+      model: model,
+      systemMessage: "You translate Hacker News story titles faithfully.",
+      userPrompt: Self.buildTitleTranslationPrompt(title: title, targetLanguage: targetLanguage),
+      temperature: 0.1
+    )
+
+    return Self.cleanTranslatedTitle(response)
+  }
+
   private func sendChatCompletion(
     apiKey: String,
     baseUrl: String,
@@ -226,6 +254,30 @@ final class AIService: Sendable {
       Original article excerpt:
       \(clippedArticle)
       """
+  }
+
+  static func buildTitleTranslationPrompt(title: String, targetLanguage: String) -> String {
+    let languageName = ReadingLanguage.displayName(for: targetLanguage)
+
+    return """
+      Translate this Hacker News story title to \(languageName).
+
+      Rules:
+      - Return only the translated title.
+      - Preserve product names, project names, code names, API names, and version numbers.
+      - Keep the title concise and natural for technical readers.
+      - Do not add commentary, quotes, bullets, or markdown.
+
+      Title:
+      \(title)
+      """
+  }
+
+  static func cleanTranslatedTitle(_ response: String) -> String {
+    response
+      .trimmingCharacters(in: .whitespacesAndNewlines)
+      .trimmingCharacters(in: CharacterSet(charactersIn: "\"'`"))
+      .trimmingCharacters(in: .whitespacesAndNewlines)
   }
 
   static func decodeArticleTranslation(_ response: String) throws -> ArticleTranslation {

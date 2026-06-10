@@ -12,6 +12,8 @@ struct StoryRowView: View {
   let item: HNItem
   let isRead: Bool
   let isSaved: Bool
+  var translatedTitle: String?
+  var isTranslatingTitle: Bool = false
 
   var body: some View {
     HStack(alignment: .top, spacing: 12) {
@@ -31,11 +33,27 @@ struct StoryRowView: View {
 
       // MARK: - Center: Content
       VStack(alignment: .leading, spacing: 6) {
-        Text(item.title ?? "Untitled")
+        Text(displayTitle)
           .font(.system(size: 16, weight: .medium))
           .foregroundStyle(isRead ? .secondary : .primary)
           .lineLimit(3)
           .fixedSize(horizontal: false, vertical: true)
+
+        if let originalTitle {
+          Text(originalTitle)
+            .font(.caption)
+            .foregroundStyle(.secondary)
+            .lineLimit(2)
+            .fixedSize(horizontal: false, vertical: true)
+        } else if isTranslatingTitle {
+          HStack(spacing: 4) {
+            ProgressView()
+              .controlSize(.mini)
+            Text("Translating title...")
+          }
+          .font(.caption2)
+          .foregroundStyle(.secondary)
+        }
 
         HStack(spacing: 6) {
           if let domain = item.url?.hostDomain {
@@ -79,6 +97,16 @@ struct StoryRowView: View {
     }
     .padding(.vertical, 8)
     .contentShape(Rectangle())  // Make entire row tappable
+  }
+
+  private var displayTitle: String {
+    translatedTitle?.isEmpty == false ? translatedTitle! : item.title ?? "Untitled"
+  }
+
+  private var originalTitle: String? {
+    guard let translatedTitle, !translatedTitle.isEmpty else { return nil }
+    guard translatedTitle != item.title else { return nil }
+    return item.title
   }
 }
 
