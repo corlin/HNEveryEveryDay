@@ -44,6 +44,8 @@ struct FeedView: View {
             ContentUnavailableView(
               "No Saved Stories", systemImage: "bookmark.slash",
               description: Text("Swipe left on a story to save it."))
+              .listRowSeparator(.hidden)
+              .listRowBackground(Color.clear)
           } else {
             ForEach(savedStories, id: \.id) { cached in
               let savedItem = item(from: cached)
@@ -56,7 +58,10 @@ struct FeedView: View {
                   isTranslatingTitle: translatingTitleIds.contains(savedItem.id)
                 )
               }
-              .padding(.vertical, 4)
+              .buttonStyle(.plain)
+              .listRowSeparator(.hidden)
+              .listRowInsets(EdgeInsets(top: 5, leading: 12, bottom: 5, trailing: 12))
+              .listRowBackground(Color.clear)
               .task(id: titleTranslationTaskID(for: savedItem)) {
                 await queueTitleTranslationIfNeeded(for: savedItem)
               }
@@ -80,6 +85,10 @@ struct FeedView: View {
                 isTranslatingTitle: translatingTitleIds.contains(story.id)
               )
             }
+            .buttonStyle(.plain)
+            .listRowSeparator(.hidden)
+            .listRowInsets(EdgeInsets(top: 5, leading: 12, bottom: 5, trailing: 12))
+            .listRowBackground(Color.clear)
             .task(id: titleTranslationTaskID(for: story)) {
               await queueTitleTranslationIfNeeded(for: story)
             }
@@ -102,17 +111,26 @@ struct FeedView: View {
 
           if viewModel.isLoading && viewModel.stories.isEmpty {
             SkeletonView()
+              .listRowSeparator(.hidden)
+              .listRowBackground(Color.clear)
           }
 
           if viewModel.stories.isEmpty && !viewModel.isLoading {
             ContentUnavailableView(
               "No Stories Found", systemImage: "wifi.slash",
               description: Text("Check your connection or try again."))
+              .listRowSeparator(.hidden)
+              .listRowBackground(Color.clear)
           }
         }
       }
       .listStyle(.plain)
+      .scrollContentBackground(.hidden)
+      .background(Color(.systemGroupedBackground))
       .navigationTitle(showingSavedOnly ? "Saved" : "Hacker News")
+      .navigationBarTitleDisplayMode(.inline)
+      .toolbarBackground(Color(.systemGroupedBackground), for: .navigationBar)
+      .toolbarBackground(.visible, for: .navigationBar)
       .refreshable {
         if !showingSavedOnly {
           await viewModel.refresh()

@@ -28,6 +28,7 @@ Last verified: 2026-06-08, 20 unit tests passed.
 - [x] App installs and launches on iPhone 17 Pro Max Simulator.
 - [x] First-launch onboarding appears or, after completion, the Hacker News feed appears.
 - [x] Feed loads top stories.
+- [x] Feed signal cards render compactly with readable score, source, translation, saved, and comment states.
 - [ ] Story detail opens from the feed.
 - [ ] Reader mode shows parsed article content or falls back to web view cleanly.
 - [ ] Article translation can be enabled from Settings and toggled in Reader mode.
