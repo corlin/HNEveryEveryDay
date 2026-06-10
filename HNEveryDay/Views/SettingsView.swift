@@ -10,8 +10,8 @@ import SwiftUI
 struct SettingsView: View {
   // AI Configuration - API Key stored in Keychain
   @State private var apiKey: String = ""
-  @AppStorage("ai_base_url") private var baseURL: String = "https://api.openai.com/v1"
-  @AppStorage("ai_model") private var model: String = "gpt-3.5-turbo"
+  @AppStorage("ai_base_url") private var baseURL: String = AIDefaults.baseURL
+  @AppStorage("ai_model") private var model: String = AIDefaults.model
 
   // General Settings
   @AppStorage("preferred_language") private var preferredLanguage: String = "system"
@@ -39,7 +39,7 @@ struct SettingsView: View {
     var defaultBaseURL: String {
       switch self {
       case .openai: return "https://api.openai.com/v1"
-      case .deepseek: return "https://api.deepseek.com"
+      case .deepseek: return AIDefaults.baseURL
       case .qwen: return "https://dashscope.aliyuncs.com/compatible-mode/v1"
       case .glm: return "https://open.bigmodel.cn/api/paas/v4"
       case .doubao: return "https://ark.cn-beijing.volces.com/api/v3"
@@ -55,7 +55,7 @@ struct SettingsView: View {
     var suggestedModels: [String] {
       switch self {
       case .openai: return ["gpt-4o-mini", "gpt-4o", "gpt-3.5-turbo"]
-      case .deepseek: return ["deepseek-chat", "deepseek-coder"]
+      case .deepseek: return [AIDefaults.model, "deepseek-chat", "deepseek-coder"]
       case .qwen: return ["qwen-turbo", "qwen-plus", "qwen-max"]
       case .glm: return ["glm-4", "glm-4-air", "glm-3-turbo"]
       case .doubao: return []  // Requires ID, no generic name
@@ -65,7 +65,7 @@ struct SettingsView: View {
     }
   }
 
-  @State private var selectedProvider: AIProvider = .custom
+  @State private var selectedProvider: AIProvider = .deepseek
 
   var body: some View {
     NavigationStack {

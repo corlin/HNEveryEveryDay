@@ -45,8 +45,8 @@ final class AIService: Sendable {
   {
     // Read API key from Keychain (secure storage)
     let apiKey = KeychainHelper.read(key: "ai_api_key") ?? ""
-    let baseUrl = UserDefaults.standard.string(forKey: "ai_base_url") ?? "https://api.openai.com/v1"
-    let model = UserDefaults.standard.string(forKey: "ai_model") ?? "gpt-3.5-turbo"
+    let baseUrl = UserDefaults.standard.string(forKey: "ai_base_url") ?? AIDefaults.baseURL
+    let model = UserDefaults.standard.string(forKey: "ai_model") ?? AIDefaults.model
 
     guard !apiKey.isEmpty else {
       throw NSError(
@@ -82,8 +82,8 @@ final class AIService: Sendable {
     targetLanguage: String
   ) async throws -> ArticleTranslation {
     let apiKey = KeychainHelper.read(key: "ai_api_key") ?? ""
-    let baseUrl = UserDefaults.standard.string(forKey: "ai_base_url") ?? "https://api.openai.com/v1"
-    let model = UserDefaults.standard.string(forKey: "ai_model") ?? "gpt-3.5-turbo"
+    let baseUrl = UserDefaults.standard.string(forKey: "ai_base_url") ?? AIDefaults.baseURL
+    let model = UserDefaults.standard.string(forKey: "ai_model") ?? AIDefaults.model
 
     guard !apiKey.isEmpty else {
       throw NSError(
@@ -129,7 +129,7 @@ final class AIService: Sendable {
 
     let endpoint =
       URL(string: baseUrl)?.appendingPathComponent("chat/completions") ?? URL(
-        string: "https://api.openai.com/v1/chat/completions")!
+        string: "\(AIDefaults.baseURL)/chat/completions")!
 
     var request = URLRequest(url: endpoint)
     request.httpMethod = "POST"
